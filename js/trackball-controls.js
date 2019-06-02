@@ -30,7 +30,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 	this.staticMoving = false;
 
     // the "inertia" behavior. 0: no friction. 1: no inertial behavior.
-	this.dynamicDampingFactor = 0.15;
+	this.dynamicDampingFactor = 0.10;
 
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
