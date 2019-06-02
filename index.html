@@ -1,111 +1,15 @@
 <html>
 	<head>
-		<title>My first three.js app</title>
+		<title>3D TSP Solution View</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
 		</style>
 	</head>
 	<body>
-		<script src="js/three.min.js"></script>
-		<script src="js/trackball-controls.js"></script>
-		<script>
-
-            var model = {
-                cities: [],
-                path: []
-            };
-            for (var i=0; i<10; ++i) {
-                let rx = Math.random();
-                let ry = Math.random();
-                let rz = Math.random();
-                model.cities.push({x:rx, y:ry, z: rz});
-            }
-
-            var controls;
-
-            init();
-            animate();
-
-            function init() {
-                var scene = new THREE.Scene();
-                var aspectRatio = window.innerWidth / window.innerHeight
-                var camera = new THREE.PerspectiveCamera(
-                    75             /* fov - Camera frustum vertical field of view. */
-                    , aspectRatio  /* Aspect ratio */
-                    , 0.1          /* Camera frustum near plane */
-                    , 1000         /* Camera frustum far plane */
-                );
-                camera.position.z = 5;
-
-                var renderer = new THREE.WebGLRenderer();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                document.body.appendChild(renderer.domElement);
-
-                controls = new THREE.TrackballControls(camera);
-                controls.addEventListener('change', render);
-
-                var geometry = new THREE.CubeGeometry(100,100,100);
-                var material = new THREE.MeshNormalMaterial();
-
-                var mesh = new THREE.Mesh(geometry, material);
-                scene.add(mesh);
-
-                var ambientLight = new THREE.AmbientLight(0x090909);
-                scene.add(ambientLight);
-            }
-
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-            }
-
-            function render() {
-                renderer.render(scene, camera);
-            }
-
-            /*
-
-
-			var geometryBounds = new THREE.BoxGeometry(1, 1, 1);
-            
-            var wireframe = new THREE.LineSegments(
-                new THREE.EdgesGeometry(geometryBounds),
-                new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 1 }));
-            wireframe.position.x += 0.5;
-            wireframe.position.y += 0.5;
-            wireframe.position.z += 0.5;
-            scene.add( wireframe );
-
-			var materialBasicRed = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-			var geometryWaypoint = new THREE.BoxGeometry(0.01, 0.01, 0.01);
-
-
-            var renderModel = function(model) {
-                model.cities.forEach(p => {
-                    var point = new THREE.Mesh(geometryWaypoint, materialBasicRed);
-                    point.position.x = p.x;
-                    point.position.y = p.y;
-                    point.position.z = p.z;
-                    scene.add(point);
-                });
-		        renderer.render(scene, camera);
-            }
-
-            renderModel(model);
-            */
-
-			//var animate = function () {
-			//	requestAnimationFrame( animate );
-
-			//	cube.rotation.x += 0.01;
-			//	cube.rotation.y += 0.01;
-
-			//	renderer.render( scene, camera );
-			//};
-
-			//animate();
-		</script>
+        <script src="js/three.min.js"></script>
+        <script src="js/trackball-controls.js"></script>
+        <script src="index.js"></script>
 	</body>
 </html>
 
