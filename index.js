@@ -1,3 +1,5 @@
+var host = 'http://tspv.sungeunchoi.com:8080';
+
 var camera, scene, renderer, controls;
 var lblCurrentT = null;
 var lblCurrentDistance = null;
@@ -41,13 +43,19 @@ function loadUIComponents() {
  * For better or for worse, they are set globally.
  */
 function initializeThreeJsEnvironment() {
+    const viewportWidth = viewportSize.getWidth();
+    const viewportHeight = viewportSize.getHeight();
+    const viewportAspect = viewportWidth / viewportHeight;
+
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
+    //camera = new THREE.PerspectiveCamera(70, viewportAspect, 0.01, 10);
     camera.position.z = 1.4;
 
     scene = new THREE.Scene();
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    //renderer.setSize(viewportWidth, viewportHeight);
 
     let c = document.getElementById('canvas3d');
     c.appendChild(renderer.domElement);
@@ -93,9 +101,9 @@ function render() {
 }
 
 async function loadModel() {
-    let data = await $.ajax("http://localhost:8089/data/cities/quatar-194-3d.csv");
+    let data = await $.ajax(host + "/data/cities/quatar-194-3d.csv");
     let cities = normalizeCitiesLocations(decodeCitiesData(data));
-    let tours_raw = await $.ajax("http://localhost:8089/data/tours/out.csv");
+    let tours_raw = await $.ajax(host + "/data/tours/out.csv");
 
     // tours_raw data format: min;max;[1,2,...,n]
     let tours = decodeTourData(tours_raw);

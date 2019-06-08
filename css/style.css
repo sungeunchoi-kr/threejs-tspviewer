@@ -19,6 +19,16 @@ time, mark, audio, video {
 	vertical-align: baseline;
 }
 
+/* font */
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro&display=swap');
+
+body {
+    /* prevents extraneous space + scrollbars from showing. */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 .diagnostics-panel {
     position: absolute;
     z-index: 100;
@@ -27,7 +37,7 @@ time, mark, audio, video {
 
 .diagnostics-panel p {
     color: lightgreen;
-    font-family: monospace, sans-serif;
+    font-family: "Source Code Pro", monospace, sans-serif;
     font-size: 0.8em;
 }
 
@@ -45,4 +55,6 @@ time, mark, audio, video {
     left: 0;
 }
 
+#canvas3d {
+}
 
