@@ -3,7 +3,12 @@ var geometry, material, mesh;
 
 var model = {
     cities: [],
-    path: []
+    tours: [],
+};
+
+var state = {
+    currentTourIndex: 0,
+    line: null 
 };
 
 window.addEventListener('load', function() {
@@ -77,9 +82,60 @@ function loadData() {
         function(data) {
             // data format: min;max;[1,2,...,n]
             let tours = decodeTourData(data);
-            console.log(tours);
+            console.log('loaded ' + tours.length + 'tours.');
+            model.tours = tours;
+
+            setInterval(modifyState, 100);
         }
     );
+}
+
+let lineMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
+function modifyState() {
+    state.currentTourIndex += 1;
+    if (state.currentTourIndex >= model.tours.length) {
+        state.currentTourIndex = 0;
+    }
+
+    if (state.line == null) {
+        let g = new THREE.Geometry();
+        modifyLineGeometry(g, model.tours[0], model.cities);
+        g.dynamic = true;
+
+        state.line = new THREE.Line(g, lineMaterial);
+        scene.add(state.line);
+    }
+
+    modifyLineGeometry(
+        state.line.geometry,
+        model.tours[state.currentTourIndex],
+        model.cities
+    );
+
+    render();
+}
+
+/**
+ * @param g
+ * @param tour
+ * @param cities
+ */
+function modifyLineGeometry(g, tour, cities) {
+    let home = cities[tour[0]];
+    for (var i=0; i<tour.length; ++i) {
+        var i_city = tour[i];
+
+        if (g.vertices[i] == null) {
+            g.vertices[i] = new THREE.Vector3();
+        }
+
+        g.vertices[i].x = cities[i_city][0];
+        g.vertices[i].y = cities[i_city][1];
+        g.vertices[i].z = cities[i_city][2];
+    }
+
+    g.vertices[i] = new THREE.Vector3(home[0], home[1], home[2]);
+    g.verticesNeedUpdate = true;
 }
 
 /**
