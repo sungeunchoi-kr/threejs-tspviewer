@@ -1,41 +1,34 @@
 var camera, scene, renderer, controls;
-var geometry, material, mesh;
 
-var model = {
-    cities: [],
-    tours: [],
-};
+window.addEventListener('load', async function() {
+    initializeThreeJsEnvironment();
 
-var state = {
-    currentTourIndex: 0,
-    line: null 
-};
+    let model = await loadModel();
+    console.log("Loaded model: %O", model);
 
-window.addEventListener('load', function() {
-    init();
-    loadData();
+    let state = {
+        currentTourIndex: 0,
+        line: null 
+    };
+
+    // setup the scene using the model (drawing cities, etc)
+    setupScene(model);
+
+    setInterval(() => modifyState(state, model), 100);
+
     animate();
     render();
 });
 
-function init() {
+/**
+ * Initialize the camera, scene, renderer, and controls.
+ * For better or for worse, they are set globally.
+ */
+function initializeThreeJsEnvironment() {
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
     camera.position.z = 1.4;
 
     scene = new THREE.Scene();
-
-    geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
-    material = new THREE.MeshNormalMaterial();
-
-    var wireframe = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geometry),
-        new THREE.LineBasicMaterial({ color: 0x22222233, linewidth: 1 }));
-
-    //mesh = new THREE.Mesh(geometry, material);
-    wireframe.rotation.x += 45;
-    wireframe.rotation.y += 45;
-    wireframe.rotation.z += 45;
-    scene.add(wireframe);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -43,6 +36,32 @@ function init() {
 
     controls = new THREE.TrackballControls(camera);
     controls.addEventListener('change', render);
+}
+
+function setupScene(model) {
+    let geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+
+    let wireframe = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geometry),
+        new THREE.LineBasicMaterial({ color: 0x22222233, linewidth: 1 }));
+
+    wireframe.rotation.x += 45;
+    wireframe.rotation.y += 45;
+    wireframe.rotation.z += 45;
+    scene.add(wireframe);
+
+    // Draw the cities.
+    model.cities.forEach(p => {
+        var point = new THREE.Mesh(
+            new THREE.BoxGeometry(0.01, 0.01, 0.01),
+            new THREE.MeshNormalMaterial());
+        
+        point.position.x = p[0] || 0.0;
+        point.position.y = p[1] || 0.0;
+        point.position.z = p[2] || 0.0;
+
+        scene.add(point);
+    });
 }
 
 function animate() {
@@ -54,44 +73,22 @@ function render() {
     renderer.render(scene, camera);
 }
 
-function loadData() {
-    $.get(
-        "http://localhost:8089/data/cities/djibouti-38.csv",
-        {},
-        function(data) {
-            model.cities = normalizeCitiesLocations(decodeCitiesData(data));
+async function loadModel() {
+    let data = await $.ajax("http://localhost:8089/data/cities/quatar-194-3d.csv");
+    let cities = normalizeCitiesLocations(decodeCitiesData(data));
+    let tours_raw = await $.ajax("http://localhost:8089/data/tours/out.csv");
 
-            var cityPointGeometry = new THREE.BoxGeometry(0.01, 0.01, 0.01);
-            model.cities.forEach(p => {
-                var point = new THREE.Mesh(
-                    cityPointGeometry,
-                    material);
-                
-                point.position.x = p[0] || 0.0;
-                point.position.y = p[1] || 0.0;
-                point.position.z = p[2] || 0.0;
-
-                scene.add(point);
-                render();
-            });
-        }
-    );
-
-    $.get("http://localhost:8089/data/tours/djibouti-tour-01.csv",
-        {},
-        function(data) {
-            // data format: min;max;[1,2,...,n]
-            let tours = decodeTourData(data);
-            console.log('loaded ' + tours.length + 'tours.');
-            model.tours = tours;
-
-            setInterval(modifyState, 100);
-        }
-    );
+    // tours_raw data format: min;max;[1,2,...,n]
+    let tours = decodeTourData(tours_raw);
+    return {cities, tours};
 }
 
-let lineMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
-function modifyState() {
+let lineMaterial = new THREE.LineBasicMaterial({
+    color: 0xff0000,
+    transparent: true,
+    opacity: 0.5
+});
+function modifyState(state, model) {
     state.currentTourIndex += 1;
     if (state.currentTourIndex >= model.tours.length) {
         state.currentTourIndex = 0;
@@ -124,10 +121,8 @@ function modifyLineGeometry(g, tour, cities) {
     let home = cities[tour[0]];
     for (var i=0; i<tour.length; ++i) {
         var i_city = tour[i];
-
-        if (g.vertices[i] == null) {
+        if (g.vertices[i] == null)
             g.vertices[i] = new THREE.Vector3();
-        }
 
         g.vertices[i].x = cities[i_city][0];
         g.vertices[i].y = cities[i_city][1];
@@ -188,16 +183,16 @@ function normalizeCitiesLocations(cities) {
     var ystats = calculateComponentStats(1, cities);
     var zstats = calculateComponentStats(2, cities);
     var center = [xstats.avg, ystats.avg, zstats.avg];
-    var dM = Math.max(xstats.delta, ystats.delta, zstats.delta);
+    //var dM = Math.max(xstats.delta, ystats.delta, zstats.delta);
 
     cities.map(p => {
         p[0] -= center[0];
         p[1] -= center[1];
         p[2] -= center[2];
 
-        p[0] /= dM;
-        p[1] /= dM;
-        p[2] /= dM;
+        p[0] /= xstats.delta;
+        p[1] /= ystats.delta;
+        p[2] /= zstats.delta;
 
         return p;
     });
