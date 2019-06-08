@@ -1,6 +1,11 @@
 var camera, scene, renderer, controls;
+var lblCurrentT = null;
+var lblCurrentDistance = null;
+var lblCitiesCt = null;
+var lblToursCt = null;
 
 window.addEventListener('load', async function() {
+    loadUIComponents();
     initializeThreeJsEnvironment();
 
     let model = await loadModel();
@@ -14,11 +19,22 @@ window.addEventListener('load', async function() {
     // setup the scene using the model (drawing cities, etc)
     setupScene(model);
 
+    // setup the diagnostic panel labels.
+    lblCitiesCt.text(model.cities.length);
+    lblToursCt.text(model.tours.length);
+
     setInterval(() => modifyState(state, model), 100);
 
     animate();
     render();
 });
+
+function loadUIComponents() {
+    lblCitiesCt = $('#lbl-cities-ct');
+    lblToursCt = $('#lbl-tours-ct');
+    lblCurrentT = $('#lbl-current-t');
+    lblCurrentDistance = $('#lbl-current-dist');
+}
 
 /**
  * Initialize the camera, scene, renderer, and controls.
@@ -32,7 +48,10 @@ function initializeThreeJsEnvironment() {
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+
+    let c = document.getElementById('canvas3d');
+    c.appendChild(renderer.domElement);
+    //document.body.appendChild(renderer.domElement);
 
     controls = new THREE.TrackballControls(camera);
     controls.addEventListener('change', render);
@@ -103,11 +122,16 @@ function modifyState(state, model) {
         scene.add(state.line);
     }
 
+    let currentTour = model.tours[state.currentTourIndex];
+
     modifyLineGeometry(
         state.line.geometry,
-        model.tours[state.currentTourIndex],
+        currentTour,
         model.cities
     );
+
+    lblCurrentT.text(state.currentTourIndex + ' / ' + model.tours.length);
+    lblCurrentDistance.text(currentTour.distance);
 
     render();
 }
@@ -209,7 +233,10 @@ function decodeTourData(data) {
         }
 
         let tokens = line.split(';');
+        let distance = JSON.parse(tokens[0]);
         let tour = JSON.parse(tokens[2]);
+
+        tour.distance = distance;
         tours.push(tour);
     });
 
