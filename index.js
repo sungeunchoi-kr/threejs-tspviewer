@@ -43,10 +43,6 @@ function loadUIComponents() {
  * For better or for worse, they are set globally.
  */
 function initializeThreeJsEnvironment() {
-    const viewportWidth = viewportSize.getWidth();
-    const viewportHeight = viewportSize.getHeight();
-    const viewportAspect = viewportWidth / viewportHeight;
-
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
     //camera = new THREE.PerspectiveCamera(70, viewportAspect, 0.01, 10);
     camera.position.z = 1.4;
@@ -55,11 +51,9 @@ function initializeThreeJsEnvironment() {
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    //renderer.setSize(viewportWidth, viewportHeight);
 
     let c = document.getElementById('canvas3d');
     c.appendChild(renderer.domElement);
-    //document.body.appendChild(renderer.domElement);
 
     controls = new THREE.TrackballControls(camera);
     controls.addEventListener('change', render);
@@ -101,9 +95,9 @@ function render() {
 }
 
 async function loadModel() {
-    let data = await $.ajax(host + "/data/cities/quatar-194-3d.csv");
+    let data = await $.ajax(host + "/data/cities/helix-100-3d.csv");
     let cities = normalizeCitiesLocations(decodeCitiesData(data));
-    let tours_raw = await $.ajax(host + "/data/tours/out.csv");
+    let tours_raw = await $.ajax(host + "/data/tours/helix-100-3d-tour.csv");
 
     // tours_raw data format: min;max;[1,2,...,n]
     let tours = decodeTourData(tours_raw);
