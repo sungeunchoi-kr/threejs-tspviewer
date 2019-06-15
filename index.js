@@ -180,7 +180,7 @@ function decodeCitiesData(citiesData) {
         var no = tokens[0];
         var coord = tokens.slice(1);
 
-        coord = coord.map(v => parseInt(v));
+        coord = coord.map(v => Number(v));
 
         if (coord.length == 2) {
             coord.push(0.0);
